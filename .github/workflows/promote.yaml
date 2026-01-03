@@ -1,0 +1,60 @@
+name: Auto-Promote Branches
+
+on:
+  workflow_run:
+    workflows: [ "Build and Push Docker Image" ]
+    types: [ completed ]
+    branches: [ dev, staging ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote-dev-to-staging:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: staging
+
+      - name: Configure Git
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+
+      - name: Merge dev into staging
+        run: |
+          git fetch origin dev
+          git merge origin/dev --no-ff -m "Auto-promote from dev after successful build"
+          git push origin staging
+        continue-on-error: true
+
+  promote-staging-to-prod:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'staging' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: prod
+
+      - name: Configure Git
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+
+      - name: Merge staging into prod
+        run: |
+          git fetch origin staging
+          git merge origin/staging --no-ff -m "Auto-promote from staging after successful build"
+          git push origin prod
+        continue-on-error: true

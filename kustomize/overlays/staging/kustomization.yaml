@@ -11,6 +11,10 @@ namePrefix: staging-
 commonLabels:
   environment: staging
 
+images:
+  - name: amokscience/hello
+    newTag: staging-latest
+
 patches:
   - target:
       kind: Deployment

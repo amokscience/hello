@@ -11,6 +11,10 @@ namePrefix: qa-
 commonLabels:
   environment: qa
 
+images:
+  - name: amokscience/hello
+    newTag: qa-latest
+
 patches:
   - target:
       kind: Deployment

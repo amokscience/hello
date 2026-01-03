@@ -11,6 +11,10 @@ namePrefix: prod-
 commonLabels:
   environment: production
 
+images:
+  - name: amokscience/hello
+    newTag: prod-latest
+
 patches:
   - target:
       kind: Deployment
