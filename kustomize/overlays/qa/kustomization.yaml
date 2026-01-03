@@ -13,7 +13,7 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: staging-latest
+    newTag: qa-latest
 
 patches:
   - target:
