@@ -19,12 +19,3 @@ patches:
       - op: replace
         path: /spec/replicas
         value: 2
-      - op: replace
-        path: /spec/template/spec/containers/0/env/1/value
-        value: "staging"
-      - op: replace
-        path: /spec/template/spec/containers/0/resources/requests/memory
-        value: "128Mi"
-      - op: replace
-        path: /spec/template/spec/containers/0/resources/limits/memory
-        value: "256Mi"

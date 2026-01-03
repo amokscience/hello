@@ -17,7 +17,7 @@ spec:
         image: amokscience/hello:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: 8050
           name: http
         env:
         - name: HELLO
@@ -25,17 +25,17 @@ spec:
         - name: ENVIRONMENT
           value: "development"
         - name: PORT
-          value: "8080"
+          value: "8050"
         livenessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: 8050
           initialDelaySeconds: 5
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: 8050
           initialDelaySeconds: 5
           periodSeconds: 5
         resources:
