@@ -13,12 +13,12 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: qa-b906e67cadb2a0ce17ccf8c893ee78860055998c
+    newTag: qa-dc98fa84b5db8ccfb380936b157a8bc532d124cb
 
 patches:
   - target:
       kind: Deployment
-      name: qa-hello-app
+      name: hello-app
     patch: |-
       - op: replace
         path: /spec/replicas
