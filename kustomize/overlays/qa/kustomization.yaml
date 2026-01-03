@@ -13,7 +13,7 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: qa-e67564c
+    newTag: qa-b54ff24
 
 patches:
   - target:

@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
 	"os"
+	"time"
 )
 
 var logger *slog.Logger
@@ -55,6 +58,27 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	// Get IP address
 	ipAddr := getLocalIP()
 
+	// Get current timestamp
+	timestamp := time.Now().Format("2006-01-02 15:04:05 MST")
+
+	// Read settings.json
+	settingsHTML := ""
+	file, err := os.Open("settings.json")
+	if err == nil {
+		defer file.Close()
+		data, err := io.ReadAll(file)
+		if err == nil {
+			settings := make(map[string]interface{})
+			if err := json.Unmarshal(data, &settings); err == nil {
+				settingsHTML = "<h2>Settings</h2><div class='settings-box'>"
+				for k, v := range settings {
+					settingsHTML += fmt.Sprintf("<div><span class='label'>%s:</span><span class='value'>%v</span></div>", k, v)
+				}
+				settingsHTML += "</div>"
+			}
+		}
+	}
+
 	// Build HTML response
 	html := fmt.Sprintf(`
 <!DOCTYPE html>
@@ -65,8 +89,11 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		body { font-family: Arial, sans-serif; margin: 20px; }
 		.container { max-width: 600px; margin: 0 auto; }
 		.info-box { background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 10px 0; }
+		.settings-box { background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #007bff; }
 		.label { font-weight: bold; color: #333; }
 		.value { color: #666; margin-left: 10px; }
+		h2 { margin-top: 20px; font-size: 1.2em; color: #333; }
+		div { margin: 8px 0; }
 	</style>
 </head>
 <body>
@@ -76,11 +103,13 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 			<div><span class="label">Environment:</span><span class="value">%s</span></div>
 			<div><span class="label">Server Name:</span><span class="value">%s</span></div>
 			<div><span class="label">IP Address:</span><span class="value">%s</span></div>
+			<div><span class="label">Timestamp:</span><span class="value">%s</span></div>
 		</div>
+		%s
 	</div>
 </body>
 </html>
-`, message, environment, serverName, ipAddr)
+`, message, environment, serverName, ipAddr, timestamp, settingsHTML)
 
 	fmt.Fprint(w, html)
 	logger.Info("Request handled", "path", r.URL.Path, "method", r.Method)
