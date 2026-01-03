@@ -27,7 +27,34 @@ jobs:
         with:
           context: .
           push: true
-          tags: amokscience/hello:${{ github.ref_name }}-latest
+          tags: |
+            amokscience/hello:${{ github.ref_name }}-latest
+            amokscience/hello:${{ github.ref_name }}-${{ github.sha }}
+
+      - name: Update Kustomize with new image SHA
+        run: |
+          BRANCH=${{ github.ref_name }}
+          SHA=${{ github.sha }}
+          
+          if [ "$BRANCH" = "dev" ]; then
+            sed -i "s/newTag: dev-.*/newTag: dev-${SHA:0:7}/" kustomize/overlays/dev/kustomization.yaml
+          elif [ "$BRANCH" = "qa" ]; then
+            sed -i "s/newTag: qa-.*/newTag: qa-${SHA:0:7}/" kustomize/overlays/qa/kustomization.yaml
+          elif [ "$BRANCH" = "staging" ]; then
+            sed -i "s/newTag: staging-.*/newTag: staging-${SHA:0:7}/" kustomize/overlays/staging/kustomization.yaml
+          elif [ "$BRANCH" = "prod" ]; then
+            sed -i "s/newTag: prod-.*/newTag: prod-${SHA:0:7}/" kustomize/overlays/prod/kustomization.yaml
+          fi
+
+      - name: Commit updated Kustomize manifests
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add kustomize/
+          git diff --cached --quiet || git commit -m "Update image SHA for ${{ github.ref_name }}: ${{ github.sha }}"
+          git push origin ${{ github.ref_name }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   promote:
     needs: build
