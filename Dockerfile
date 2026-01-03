@@ -19,5 +19,11 @@ COPY --from=build /app/hello .
 COPY --from=build /app/input.txt ./
 COPY --from=build /app/settings.json ./
 
+# Expose port
+EXPOSE 8080
+
+# Run the application
+CMD ["./hello"]
+
 # Command to run the program
 ENTRYPOINT ["./hello"]
