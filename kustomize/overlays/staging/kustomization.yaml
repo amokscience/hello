@@ -13,7 +13,7 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: staging-b75cc5fb51c8613980dfeb7dbc77389888a1b57d
+    newTag: staging-14c544baf49507413aa3db319ff31fb737549a14
 
 patches:
   - target:
@@ -22,4 +22,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/replicas
-        value: 2
+        value: 3
