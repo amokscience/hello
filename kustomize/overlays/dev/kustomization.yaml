@@ -11,6 +11,10 @@ namePrefix: dev-
 commonLabels:
   environment: development
 
+images:
+  - name: amokscience/hello
+    newTag: dev-latest
+
 patches:
   - target:
       kind: Deployment
