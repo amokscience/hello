@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: hello
-        image: hello:latest
-        imagePullPolicy: IfNotPresent
+        image: amokscience/hello:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
           name: http
