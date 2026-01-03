@@ -13,7 +13,7 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: prod-f3c9de6
+    newTag: prod-8628f744d8a6b8cf068836592e19331e01142356
 
 patches:
   - target:
