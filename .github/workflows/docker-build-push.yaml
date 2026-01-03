@@ -2,7 +2,7 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [ dev, staging, prod, main ]
+    branches: [ dev, qa, staging, prod, main ]
   workflow_dispatch:
 
 permissions:
@@ -35,21 +35,39 @@ jobs:
     if: success()
     
     steps:
-      - name: Promote dev to staging
+      - name: Promote dev to qa
         if: github.ref == 'refs/heads/dev'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: staging
+          ref: qa
 
-      - name: Configure Git (promote dev)
+      - name: Configure Git and merge dev to qa
         if: github.ref == 'refs/heads/dev'
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
           git fetch origin dev
           git merge origin/dev --no-ff -m "Auto-promote from dev after successful build"
+          git push origin qa
+        continue-on-error: true
+
+      - name: Promote qa to staging
+        if: github.ref == 'refs/heads/qa'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: staging
+
+      - name: Configure Git and merge qa to staging
+        if: github.ref == 'refs/heads/qa'
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git fetch origin qa
+          git merge origin/qa --no-ff -m "Auto-promote from qa after successful build"
           git push origin staging
         continue-on-error: true
 
@@ -61,7 +79,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: prod
 
-      - name: Configure Git (promote staging)
+      - name: Configure Git and merge staging to prod
         if: github.ref == 'refs/heads/staging'
         run: |
           git config user.email "github-actions@github.com"
