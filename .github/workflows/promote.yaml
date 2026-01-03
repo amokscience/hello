@@ -6,6 +6,10 @@ on:
     types: [ completed ]
     branches: [ dev, staging ]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   promote-dev-to-staging:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' }}
@@ -17,6 +21,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: staging
 
       - name: Configure Git
         run: |
@@ -25,10 +30,10 @@ jobs:
 
       - name: Merge dev into staging
         run: |
-          git fetch origin
-          git checkout staging
+          git fetch origin dev
           git merge origin/dev --no-ff -m "Auto-promote from dev after successful build"
           git push origin staging
+        continue-on-error: true
 
   promote-staging-to-prod:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'staging' }}
@@ -40,6 +45,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: prod
 
       - name: Configure Git
         run: |
@@ -48,7 +54,7 @@ jobs:
 
       - name: Merge staging into prod
         run: |
-          git fetch origin
-          git checkout prod
+          git fetch origin staging
           git merge origin/staging --no-ff -m "Auto-promote from staging after successful build"
           git push origin prod
+        continue-on-error: true

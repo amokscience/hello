@@ -5,6 +5,9 @@ on:
     branches: [ dev, staging, prod, main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,3 +28,45 @@ jobs:
           context: .
           push: true
           tags: amokscience/hello:${{ github.ref_name }}-latest
+
+  promote:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: Promote dev to staging
+        if: github.ref == 'refs/heads/dev'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: staging
+
+      - name: Configure Git (promote dev)
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git fetch origin dev
+          git merge origin/dev --no-ff -m "Auto-promote from dev after successful build"
+          git push origin staging
+        continue-on-error: true
+
+      - name: Promote staging to prod
+        if: github.ref == 'refs/heads/staging'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: prod
+
+      - name: Configure Git (promote staging)
+        if: github.ref == 'refs/heads/staging'
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git fetch origin staging
+          git merge origin/staging --no-ff -m "Auto-promote from staging after successful build"
+          git push origin prod
+        continue-on-error: true
