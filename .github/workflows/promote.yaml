@@ -1,71 +1,59 @@
-name: Build and Push Docker Image
+name: Auto-Promote Branches
 
 on:
-  push:
-    branches: [ dev, staging, prod, main ]
-  workflow_dispatch:
+  workflow_run:
+    workflows: [ "Build and Push Docker Image" ]
+    types: [ completed ]
+    branches: [ dev, staging ]
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  build:
+  promote-dev-to-staging:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' }}
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and Push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: amokscience/hello:${{ github.ref_name }}-latest
-
-  promote:
-    needs: build
-    runs-on: ubuntu-latest
-    if: success()
-    
-    steps:
-      - name: Promote dev to staging
-        if: github.ref == 'refs/heads/dev'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: staging
 
-      - name: Configure Git (promote dev)
-        if: github.ref == 'refs/heads/dev'
+      - name: Configure Git
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
+
+      - name: Merge dev into staging
+        run: |
           git fetch origin dev
           git merge origin/dev --no-ff -m "Auto-promote from dev after successful build"
           git push origin staging
         continue-on-error: true
 
-      - name: Promote staging to prod
-        if: github.ref == 'refs/heads/staging'
+  promote-staging-to-prod:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'staging' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: prod
 
-      - name: Configure Git (promote staging)
-        if: github.ref == 'refs/heads/staging'
+      - name: Configure Git
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
+
+      - name: Merge staging into prod
+        run: |
           git fetch origin staging
           git merge origin/staging --no-ff -m "Auto-promote from staging after successful build"
           git push origin prod
