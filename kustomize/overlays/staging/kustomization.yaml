@@ -13,7 +13,7 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: staging-32a655a
+    newTag: staging-540c21ede7e2d8501b39634aff1444bfe55b190b
 
 patches:
   - target:

@@ -36,14 +36,25 @@ jobs:
           BRANCH=${{ github.ref_name }}
           SHA=${{ github.sha }}
           
+          echo "Branch: $BRANCH, SHA: $SHA"
+          
           if [ "$BRANCH" = "dev" ]; then
-            sed -i "s/newTag: dev-.*/newTag: dev-${SHA:0:7}/" kustomize/overlays/dev/kustomization.yaml
+            FILE="kustomize/overlays/dev/kustomization.yaml"
+            sed -i "s/newTag: dev-[a-f0-9]*/newTag: dev-${SHA}/" "$FILE"
           elif [ "$BRANCH" = "qa" ]; then
-            sed -i "s/newTag: qa-.*/newTag: qa-${SHA:0:7}/" kustomize/overlays/qa/kustomization.yaml
+            FILE="kustomize/overlays/qa/kustomization.yaml"
+            sed -i "s/newTag: qa-[a-f0-9]*/newTag: qa-${SHA}/" "$FILE"
           elif [ "$BRANCH" = "staging" ]; then
-            sed -i "s/newTag: staging-.*/newTag: staging-${SHA:0:7}/" kustomize/overlays/staging/kustomization.yaml
+            FILE="kustomize/overlays/staging/kustomization.yaml"
+            sed -i "s/newTag: staging-[a-f0-9]*/newTag: staging-${SHA}/" "$FILE"
           elif [ "$BRANCH" = "prod" ]; then
-            sed -i "s/newTag: prod-.*/newTag: prod-${SHA:0:7}/" kustomize/overlays/prod/kustomization.yaml
+            FILE="kustomize/overlays/prod/kustomization.yaml"
+            sed -i "s/newTag: prod-[a-f0-9]*/newTag: prod-${SHA}/" "$FILE"
+          fi
+          
+          echo "Updated file:"
+          if [ ! -z "$FILE" ]; then
+            grep newTag "$FILE" || echo "WARNING: newTag not found in $FILE"
           fi
 
       - name: Commit updated Kustomize manifests
