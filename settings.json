@@ -1,4 +1,5 @@
 {
     "settingA": true,
-    "settingB": false
+    "settingB": false,
+    "settingC": false
 }
