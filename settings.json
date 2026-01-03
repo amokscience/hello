@@ -1,5 +1,6 @@
 {
     "settingA": true,
     "settingB": false,
-    "settingC": false
+    "settingC": false,
+    "settingD": "setting D text"
 }
