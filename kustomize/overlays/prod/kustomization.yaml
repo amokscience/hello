@@ -18,7 +18,7 @@ images:
 patches:
   - target:
       kind: Deployment
-      name: prod-hello-app
+      name: hello-app
     patch: |-
       - op: replace
         path: /spec/replicas
