@@ -15,6 +15,12 @@ images:
   - name: amokscience/hello
     newTag: dev-1af3f4ff21c21fbb4875f31248d89c3f0144814a
 
+configMapGenerator:
+  - name: hello-config
+    literals:
+      - environment=dev
+      - hello=Hello from dev Kubernetes!
+
 patches:
   - target:
       kind: Deployment
