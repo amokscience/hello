@@ -13,7 +13,7 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: qa-7cd3d9e756ee2450a3fc87fb7ef2fa899e0771ac
+    newTag: qa-ad0dcdd801164223b7689d3b5f5c8e4428c637a1
 
 configMapGenerator:
   - name: hello-config

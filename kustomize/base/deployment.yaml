@@ -21,9 +21,15 @@ spec:
           name: http
         env:
         - name: HELLO
-          value: "Hello, World!"
+          valueFrom:
+            configMapKeyRef:
+              name: hello-config
+              key: hello
         - name: ENVIRONMENT
-          value: "development"
+          valueFrom:
+            configMapKeyRef:
+              name: hello-config
+              key: environment
         - name: PORT
           value: "8050"
         - name: AWS_ACCESS_KEY_ID
