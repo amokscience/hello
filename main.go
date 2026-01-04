@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -71,8 +72,17 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 			settings := make(map[string]interface{})
 			if err := json.Unmarshal(data, &settings); err == nil {
 				settingsHTML = "<h2>Settings</h2><div class='settings-box'>"
-				for k, v := range settings {
-					settingsHTML += fmt.Sprintf("<div><span class='label'>%s:</span><span class='value'>%v</span></div>", k, v)
+				
+				// Sort keys for consistent order
+				keys := make([]string, 0, len(settings))
+				for k := range settings {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+				
+				// Display settings in sorted order
+				for _, k := range keys {
+					settingsHTML += fmt.Sprintf("<div><span class='label'>%s:</span><span class='value'>%v</span></div>", k, settings[k])
 				}
 				settingsHTML += "</div>"
 			}
