@@ -150,7 +150,6 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, `{"status":"healthy"}`)
-	logger.Info("Health check", "path", r.URL.Path)
 }
 
 func getLocalIP() string {
