@@ -15,6 +15,12 @@ images:
   - name: amokscience/hello
     newTag: qa-dc98fa84b5db8ccfb380936b157a8bc532d124cb
 
+configMapGenerator:
+  - name: hello-config
+    literals:
+      - environment=qa
+      - hello=Hello from qa Kubernetes!
+
 patches:
   - target:
       kind: Deployment

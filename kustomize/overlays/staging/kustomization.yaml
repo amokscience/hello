@@ -15,6 +15,12 @@ images:
   - name: amokscience/hello
     newTag: staging-0000000
 
+configMapGenerator:
+  - name: hello-config
+    literals:
+      - environment=staging
+      - hello=Hello from staging Kubernetes!
+
 patches:
   - target:
       kind: Deployment
