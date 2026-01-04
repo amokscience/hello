@@ -15,6 +15,12 @@ images:
   - name: amokscience/hello
     newTag: prod-67d5e43635ff50c3af13a51e5c67419a87f964c1
 
+configMapGenerator:
+  - name: hello-config
+    literals:
+      - environment=prod
+      - hello=Hello from prod Kubernetes!
+
 patches:
   - target:
       kind: Deployment
