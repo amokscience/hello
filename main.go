@@ -89,6 +89,26 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Fetch and display AWS Secrets
+	secretsHTML := ""
+	secretData, err := getAWSSecret("eso-secret-hello")
+	if err == nil {
+		secretsHTML = "<h2>AWS Secrets</h2><div class='settings-box'>"
+
+		// Sort keys for consistent order
+		secretKeys := make([]string, 0, len(secretData))
+		for k := range secretData {
+			secretKeys = append(secretKeys, k)
+		}
+		sort.Strings(secretKeys)
+
+		// Display secrets in sorted order
+		for _, k := range secretKeys {
+			secretsHTML += fmt.Sprintf("<div><span class='label'>%s:</span><span class='value'>%v</span></div>", k, secretData[k])
+		}
+		secretsHTML += "</div>"
+	}
+
 	// Build HTML response
 	html := fmt.Sprintf(`
 <!DOCTYPE html>
@@ -101,7 +121,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		.info-box { background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 10px 0; }
 		.settings-box { background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #007bff; }
 		.label { font-weight: bold; color: #333; }
-		.value { color: #666; margin-left: 10px; }
+		.value { color: #666; margin-left: 10px; word-break: break-all; }
 		h2 { margin-top: 20px; font-size: 1.2em; color: #333; }
 		div { margin: 8px 0; }
 	</style>
@@ -116,10 +136,11 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 			<div><span class="label">Timestamp:</span><span class="value">%s</span></div>
 		</div>
 		%s
+		%s
 	</div>
 </body>
 </html>
-`, message, environment, serverName, ipAddr, timestamp, settingsHTML)
+`, message, environment, serverName, ipAddr, timestamp, settingsHTML, secretsHTML)
 
 	fmt.Fprint(w, html)
 	logger.Info("Request handled", "path", r.URL.Path, "method", r.Method)
