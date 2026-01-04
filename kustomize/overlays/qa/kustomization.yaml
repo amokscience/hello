@@ -13,7 +13,13 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: qa-dc98fa84b5db8ccfb380936b157a8bc532d124cb
+    newTag: qa-951133d42c9ade98e4fad73309efefb4416b07e1
+
+configMapGenerator:
+  - name: hello-config
+    literals:
+      - environment=qa
+      - hello=Hello from qa Kubernetes!
 
 patches:
   - target:

@@ -13,7 +13,13 @@ commonLabels:
 
 images:
   - name: amokscience/hello
-    newTag: dev-58d66a85d8d2ce9396a651e4fac80493919b5216
+    newTag: dev-5b84e25a3ca020413a3875dfd83496f5d3ee8263
+
+configMapGenerator:
+  - name: hello-config
+    literals:
+      - environment=dev
+      - hello=Hello from dev Kubernetes!
 
 patches:
   - target:
