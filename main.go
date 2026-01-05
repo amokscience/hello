@@ -10,33 +10,93 @@ import (
 	"os"
 	"sort"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/metric"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 )
 
 var logger *slog.Logger
+var httpRequestCounter metric.Int64Counter
+var httpRequestDurationHistogram metric.Float64Histogram
+
+func initMetrics() error {
+	// Create Prometheus exporter
+	exporter, err := prometheus.New()
+	if err != nil {
+		return err
+	}
+
+	// Create metric provider with Prometheus exporter
+	meterProvider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(exporter))
+	otel.SetMeterProvider(meterProvider)
+
+	// Create meter
+	meter := meterProvider.Meter("hello-service")
+
+	// Create counters and histograms
+	httpRequestCounter, err = meter.Int64Counter(
+		"http_requests_total",
+		metric.WithDescription("Total number of HTTP requests"),
+	)
+	if err != nil {
+		return err
+	}
+
+	httpRequestDurationHistogram, err = meter.Float64Histogram(
+		"http_request_duration_seconds",
+		metric.WithDescription("HTTP request duration in seconds"),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func main() {
-	logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+	// Initialize OpenTelemetry metrics
+	if err := initMetrics(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to initialize metrics: %v\n", err)
+		os.Exit(1)
+	}
+
+	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     slog.LevelInfo,
+		AddSource: true,
+	}))
 	logger.Info("Application started")
 
-	// Set up HTTP routes
-	http.HandleFunc("/", handleRoot)
-	http.HandleFunc("/health", handleHealth)
+	// Wrap handlers with OpenTelemetry
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handleRoot)
+	mux.HandleFunc("/health", handleHealth)
+	mux.Handle("/metrics", promhttp.Handler())
 
-	// Get port from environment or default to 8080
+	// Apply OpenTelemetry HTTP instrumentation
+	handler := otelhttp.NewHandler(mux, "hello-service")
+
+	// Get port from environment or default to 8050
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8050"
 	}
 
 	addr := ":" + port
-	logger.Info("HTTP server listening", "port", port)
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	logger.Info("HTTP server listening", "port", port, "endpoints", []string{"/", "/health", "/metrics"})
+	if err := http.ListenAndServe(addr, handler); err != nil {
 		logger.Error("Server failed", "error", err)
 		os.Exit(1)
 	}
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	start := time.Now()
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// Get environment variables
@@ -143,13 +203,35 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 `, message, environment, serverName, ipAddr, timestamp, settingsHTML, secretsHTML)
 
 	fmt.Fprint(w, html)
-	logger.Info("Request handled", "path", r.URL.Path, "method", r.Method)
+
+	// Record metrics
+	duration := time.Since(start).Seconds()
+	httpRequestCounter.Add(ctx, 1)
+	httpRequestDurationHistogram.Record(ctx, duration)
+
+	logger.InfoContext(ctx, "Request completed",
+		"path", r.URL.Path,
+		"method", r.Method,
+		"duration_seconds", duration)
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	start := time.Now()
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, `{"status":"healthy"}`)
+
+	// Record metrics
+	duration := time.Since(start).Seconds()
+	httpRequestCounter.Add(ctx, 1)
+	httpRequestDurationHistogram.Record(ctx, duration)
+
+	logger.InfoContext(ctx, "Health check",
+		"path", r.URL.Path,
+		"method", r.Method,
+		"duration_seconds", duration)
 }
 
 func getLocalIP() string {
