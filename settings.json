@@ -2,5 +2,6 @@
     "settingA": true,
     "settingB": false,
     "settingC": false,
-    "settingD": "setting D text"
+    "settingD": "setting D text",
+    "settingE": "setting E"
 }
