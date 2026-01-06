@@ -131,7 +131,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			settings := make(map[string]interface{})
 			if err := json.Unmarshal(data, &settings); err == nil {
-				settingsHTML = "<h2>Settings</h2><div class='settings-box'>"
+				settingsHTML = "<h2>Json Settings</h2><div class='settings-box'>"
 
 				// Sort keys for consistent order
 				keys := make([]string, 0, len(settings))
@@ -146,6 +146,19 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 				}
 				settingsHTML += "</div>"
 			}
+		}
+	}
+
+	// Read input.txt
+	inputHTML := ""
+	inputFile, err := os.Open("input.txt")
+	if err == nil {
+		defer inputFile.Close()
+		inputData, err := io.ReadAll(inputFile)
+		if err == nil {
+			inputHTML = "<h2>Text File Contents</h2><div class='settings-box'>"
+			inputHTML += fmt.Sprintf("<div><pre style='margin:0; white-space: pre-wrap; word-wrap: break-word;'>%s</pre></div>", string(inputData))
+			inputHTML += "</div>"
 		}
 	}
 
@@ -197,10 +210,11 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		</div>
 		%s
 		%s
+		%s
 	</div>
 </body>
 </html>
-`, message, environment, serverName, ipAddr, timestamp, settingsHTML, secretsHTML)
+`, message, environment, serverName, ipAddr, timestamp, inputHTML, settingsHTML, secretsHTML)
 
 	fmt.Fprint(w, html)
 
