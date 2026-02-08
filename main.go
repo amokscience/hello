@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -18,6 +20,36 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 )
+
+// loadDotEnv reads a local .env file (if present) and sets environment variables.
+func loadDotEnv() {
+	f, err := os.Open(".env")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		key := strings.TrimSpace(parts[0])
+		val := strings.TrimSpace(parts[1])
+		// Remove optional surrounding quotes
+		if strings.HasPrefix(val, "\"") && strings.HasSuffix(val, "\"") {
+			val = strings.Trim(val, "\"")
+		} else if strings.HasPrefix(val, "'") && strings.HasSuffix(val, "'") {
+			val = strings.Trim(val, "'")
+		}
+		os.Setenv(key, val)
+	}
+}
 
 var logger *slog.Logger
 var httpRequestCounter metric.Int64Counter
@@ -58,6 +90,9 @@ func initMetrics() error {
 }
 
 func main() {
+	// Load .env (if present) so environment variables are available.
+	loadDotEnv()
+
 	// Initialize OpenTelemetry metrics
 	if err := initMetrics(); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to initialize metrics: %v\n", err)
@@ -105,13 +140,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		environment = "not set"
 	}
 
-	customMessage := os.Getenv("HELLO")
-	if customMessage == "" {
-		customMessage = "Hello, World!"
-	}
-
-	// Append environment to message
-	message := fmt.Sprintf("%s - %s", customMessage, environment)
+	message := "Hello, World!"
 
 	// Get server name
 	serverName, _ := os.Hostname()
