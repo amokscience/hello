@@ -17,7 +17,7 @@ func getAWSSecret(secretName string) (map[string]interface{}, error) {
 	secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	region := os.Getenv("AWS_REGION")
 	if region == "" {
-		region = "us-west-1"
+		region = "us-west-2"
 	}
 
 	// If no credentials in env, return empty (graceful fallback)
