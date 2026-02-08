@@ -3,5 +3,6 @@
     "settingB": false,
     "settingC": false,
     "settingD": "setting D text",
-    "settingE": "setting E"
+    "settingE": "setting E",
+    "settingF": "lorem ipsum"
 }
