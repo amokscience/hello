@@ -22,12 +22,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Generate short SHA
+        id: short_sha
+        run: echo "sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: amokscience/hello:${{ github.ref_name }}-latest
+          tags: |
+            amokscience/hello:${{ github.ref_name }}-latest
+            amokscience/hello:${{ github.ref_name }}-${{ steps.short_sha.outputs.sha }}
 
       - name: Update GitOps repo with new image tag
         if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
