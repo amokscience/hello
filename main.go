@@ -134,12 +134,6 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Get environment variables
-	environment := os.Getenv("ENVIRONMENT")
-	if environment == "" {
-		environment = "not set"
-	}
-
 	message := "Hello, World!"
 
 	// Get server name
@@ -242,7 +236,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	</div>
 </body>
 </html>
-`, message, environment, serverName, ipAddr, timestamp, inputHTML, settingsHTML, secretsHTML)
+`, message, serverName, ipAddr, timestamp, inputHTML, settingsHTML, secretsHTML)
 
 	fmt.Fprint(w, html)
 
