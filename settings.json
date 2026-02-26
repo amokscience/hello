@@ -4,5 +4,6 @@
     "settingC": false,
     "settingD": "setting D text",
     "settingE": "setting E",
-    "settingF": "lorem ipsum"
+    "settingF": "lorem ipsum",
+    "settingG": 123
 }
