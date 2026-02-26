@@ -232,7 +232,6 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	<div class="container">
 		<h1>%s</h1>
 		<div class="info-box">
-			<div><span class="label">Environment:</span><span class="value">%s</span></div>
 			<div><span class="label">Server Name:</span><span class="value">%s</span></div>
 			<div><span class="label">IP Address:</span><span class="value">%s</span></div>
 			<div><span class="label">Timestamp:</span><span class="value">%s</span></div>
