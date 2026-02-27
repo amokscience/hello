@@ -134,7 +134,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	message := "Hello, World! Hapopy Friday. Happy Weekend"
+	message := "Hello, World! Happy Friday. Happy Weekend"
 
 	// Get server name
 	serverName, _ := os.Hostname()
